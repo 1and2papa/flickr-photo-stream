@@ -1,12 +1,14 @@
 import React from 'react';
 import InfiniteScroll from 'react-infinite-scroll-component';
+import { LazyLoadImage } from 'react-lazy-load-image-component';
 import './App.css';
+import 'react-lazy-load-image-component/src/effects/opacity.css';
 
 
 const API_KEY = "9f7d0ad0ef2a216d9506553da2af4a7a";
 const DEFAULT_SEARCH_TERM = "holiday"
 const DEFAULT_SAFE_SEARCH = 1
-const API_URL = `https://www.flickr.com/services/rest/?method=flickr.photos.search&api_key=${API_KEY}&media=photos&content_type=1&sort=relevance&extras=description%2C+owner_name%2C+tags%2C+views%2C+icon_server%2C+url_m%2C+url_n%2C+url_z%2C+url_c%2C+url_l%2C+url_o&format=json&nojsoncallback=1`
+const API_URL = `https://www.flickr.com/services/rest/?method=flickr.photos.search&api_key=${API_KEY}&media=photos&content_type=1&sort=relevance&extras=description%2C+owner_name%2C+tags%2C+icon_server%2C+url_m&format=json&nojsoncallback=1`
 
 
 class App extends React.Component {
@@ -203,7 +205,7 @@ const PhotoBox = (props) => {
   return(
     <div className="my-1 px-1 w-full md:w-1/2 lg:my-4 lg:px-4 lg:w-1/3 xl:w-1/4">
       <div className="overflow-hidden rounded-lg shadow-lg pb-2 md:pb-4">
-          <Image title={title} photoURL={photoURL} imgSrc={props.photo.url_z} />
+          <Image title={title} photoURL={photoURL} imgSrc={props.photo.url_m} />
           <Title title={title} photoURL={photoURL} />
           <UserInfo
             owner={props.photo.owner}
@@ -211,7 +213,7 @@ const PhotoBox = (props) => {
             iconfarm={props.photo.iconfarm} 
             iconserver={props.photo.iconserver}
           />
-          <Content content={props.photo.description._content} />
+          <Content content={props.photo.description._content.replace(/<[^>]+>/g, '')} />
           <TagFooter tags={props.photo.tags} onClick={props.onClick} />
       </div>
     </div>
@@ -222,7 +224,12 @@ const Image = (props) => {
   return(
     <a href={props.photoURL} target="_blank" rel="noreferrer">
       <div className="overflow-hidden flex items-center justify-center sm:h-full md:h-52 lg:h-44 w-full bg-gray-900">
-        <img alt={props.title} className="block overflow-hidden sm:w-auto sm:h-full md:w-full md:h-auto" src={props.imgSrc} />
+        <LazyLoadImage
+          alt={props.title}
+          src={props.imgSrc}
+          className="block overflow-hidden sm:w-auto sm:h-full md:w-full md:h-auto text-white border-none"
+          effect="opacity"
+        />
       </div>
     </a>
   );
