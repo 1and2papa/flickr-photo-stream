@@ -73,25 +73,32 @@ class App extends React.Component {
     }, this.getPhoto);
   }
 
+  throwError(error){
+    console.error(error.message);    
+    this.setState({
+      error: error
+    });    
+  }
+
   getMorePhotos =() => {
     this.setState({
       page: this.state.page + 1
     }, this.getPhoto)
   }
 
-
   getPhoto = async() => {
-    try {
-      let data = await flickrAPI(this.state.text, this.state.safeSearch, this.state.page);
-      this.setState({
-        totalPages: data.photos.pages,
-        photos: this.state.photos.concat(data.photos.photo)
-      });  
-    } catch (error) {
-      console.error(error);      
-      this.setState({
-        error: error
-      });
+    let result = await flickrAPI(this.state.text, this.state.safeSearch, this.state.page);
+    if (!(result instanceof Error)) {
+      try {
+        this.setState({
+          totalPages: result.photos.pages,
+          photos: this.state.photos.concat(result.photos.photo)
+        });                
+      } catch (error){
+        this.throwError(error);
+      }
+    } else {
+      this.throwError(result);
     }
   }
 
@@ -194,7 +201,7 @@ const InfiniteScrollLoader = (props) => {
   else 
     return (
       <div className="flex items-center justify-center bg-red-200 text-red-700 text-center w-full m-1 lg:m-4 py-4 rounded-lg">
-        <h4 className="w-full align-middle">{props.error.message}</h4>
+        <h4 className="w-full align-middle" role="alert">{props.error.message}</h4>
         <button
           id="reload"
           className="w-auto text-white text-sm bg-red-900 hover:bg-red-700 mx-2 px-2 py-2 rounded-lg"
@@ -242,7 +249,7 @@ const Image = (props) => {
         <LazyLoadImage
           alt={props.title}
           src={props.imgSrc}
-          className="block overflow-hidden sm:w-auto sm:h-full md:w-full md:h-auto text-white border-none"
+          className="block overflow-hidden hover:opacity-80 sm:w-auto sm:h-full md:w-full md:h-auto text-white border-none"
           effect="opacity"
         />
       </div>

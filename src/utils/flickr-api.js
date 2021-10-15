@@ -8,15 +8,8 @@ const flickrAPI = (text, safeSearch, page) => {
       .then( (response) => {
         return response.json();
       })
-      .then( (data) => {
-        if (data.stat === "fail"){
-          throw data.message;
-        } else {
-          return data;
-        }
-      })
       .catch( (error) => {
-        throw(error);
+        return error;
       });
 }
 
