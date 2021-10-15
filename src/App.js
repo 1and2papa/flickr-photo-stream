@@ -1,14 +1,13 @@
 import React from 'react';
 import InfiniteScroll from 'react-infinite-scroll-component';
 import { LazyLoadImage } from 'react-lazy-load-image-component';
+import flickrAPI from './utils/flickr-api.js'
 import './App.css';
 import 'react-lazy-load-image-component/src/effects/opacity.css';
 
 
-const API_KEY = "9f7d0ad0ef2a216d9506553da2af4a7a";
 const DEFAULT_SEARCH_TERM = "holiday"
 const DEFAULT_SAFE_SEARCH = 1
-const API_URL = `https://www.flickr.com/services/rest/?method=flickr.photos.search&api_key=${API_KEY}&media=photos&content_type=1&sort=relevance&extras=description%2C+owner_name%2C+tags%2C+icon_server%2C+url_m&format=json&nojsoncallback=1`
 
 
 class App extends React.Component {
@@ -19,7 +18,8 @@ class App extends React.Component {
       safeSearch: DEFAULT_SAFE_SEARCH,
       page: 1,
       totalPages: Infinity,
-      photos: []
+      photos: [],
+      error: null
     };
 
     this.handleChange = this.handleChange.bind(this);
@@ -39,7 +39,8 @@ class App extends React.Component {
       this.setState({
         safeSearch: event.target.value,
         page: 1,
-        photos: []
+        photos: [],
+        error: null
       }, this.getPhoto);
     } 
     if (event.target.id === "text") {
@@ -51,19 +52,24 @@ class App extends React.Component {
 
   handleKeyPress(event) {
     if (event.key === "Enter") {
-      this.setState({
-        text: event.target.value,
-        page: 1,
-        photos: []
-      }, this.getPhoto);
+      this.newSearch(event.target.value)
     }
   }
 
   handleClick(event){
+    if (event.target.id === 'reload') {
+      window.location.reload(true)
+    } else {
+      this.newSearch(event.target.value)
+    }    
+  }
+
+  newSearch(text){
     this.setState({
-      text: event.target.value,
+      text: text,
       page: 1,
-      photos: []
+      photos: [],
+      error: null
     }, this.getPhoto);
   }
 
@@ -73,26 +79,20 @@ class App extends React.Component {
     }, this.getPhoto)
   }
 
-  getPhoto = () => {
-    let url = `${API_URL}&text=${this.state.text}&safe_search=${this.state.safeSearch}&page=${this.state.page}`
-    console.debug(`Calling API: ${url}`);    
-    fetch(url)
-      .then( (response) => {
-        return response.json();
-      })
-      .then( (data) => {
-        if (data.stat === "fail"){
-          throw data.message;
-        } else {
-          this.setState({
-            totalPages: data.photos.pages,
-            photos: this.state.photos.concat(data.photos.photo)
-          })
-        }
-      })
-      .catch( (error) => {
-        console.error(new Error(error));
+
+  getPhoto = async() => {
+    try {
+      let data = await flickrAPI(this.state.text, this.state.safeSearch, this.state.page);
+      this.setState({
+        totalPages: data.photos.pages,
+        photos: this.state.photos.concat(data.photos.photo)
+      });  
+    } catch (error) {
+      console.error(error);      
+      this.setState({
+        error: error
       });
+    }
   }
 
   render() {
@@ -112,6 +112,7 @@ class App extends React.Component {
             totalPages={this.state.totalPages}
             next={this.getMorePhotos}
             onClick={this.handleClick}
+            error={this.state.error}
           />
         </div>
       </div>
@@ -135,6 +136,7 @@ const SafeSearch = (props) => {
         <select
           className="block appearance-none w-full bg-white border border-gray-200 text-gray-700 text-sm py-3 px-4 pr-8 rounded leading-tight focus:outline-none focus:bg-white focus:border-gray-500"
           id="safesearch"
+          role="list"
           value={props.safeSearch}
           onChange={props.onChange}
         >
@@ -159,6 +161,7 @@ const SearchBox = (props) => {
         className="appearance-none block w-full bg-white border border-gray-200 text-gray-700 text-sm rounded py-3 px-4 leading-tight focus:outline-none focus:bg-white focus:border-gray-500"
         id="text"
         type="text"
+        role="search"
         placeholder="tags, title and / or description"
         value={props.text}
         onChange={props.onChange}
@@ -169,13 +172,12 @@ const SearchBox = (props) => {
 }
 
 const InfiniteScrollContainer = (props) => {
-  console.debug(`Pages: ${props.page}/${props.totalPages}`);
   return (
     <InfiniteScroll
       dataLength={props.photos.length}
       next={props.next}
       hasMore={props.page < props.totalPages}
-      loader={<InfiniteScrollLoader />}
+      loader={<InfiniteScrollLoader error={props.error} onClick={props.onClick} />}
       endMessage={<InfiniteScrollEndMessage />}
       className="flex flex-wrap -mx-1 lg:-mx-4"
     >
@@ -185,9 +187,22 @@ const InfiniteScrollContainer = (props) => {
 }
 
 const InfiniteScrollLoader = (props) => {
-  return (
-    <h4 className="animate-pulse bg-gray-200 text-center w-full m-1 lg:m-4 py-4 rounded-lg">Loading...</h4>
-  );
+  if (!props.error)
+    return (
+      <h4 className="animate-pulse bg-gray-200 text-center w-full m-1 lg:m-4 py-4 rounded-lg">Loading...</h4>
+    );
+  else 
+    return (
+      <div className="flex items-center justify-center bg-red-200 text-red-700 text-center w-full m-1 lg:m-4 py-4 rounded-lg">
+        <h4 className="w-full align-middle">{props.error.message}</h4>
+        <button
+          id="reload"
+          className="w-auto text-white text-sm bg-red-900 hover:bg-red-700 mx-2 px-2 py-2 rounded-lg"
+          onClick={props.onClick}>
+          Reload
+        </button>         
+      </div>
+    );  
 }
 
 const InfiniteScrollEndMessage = (props) => {
