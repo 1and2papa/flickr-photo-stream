@@ -106,7 +106,7 @@ class App extends React.Component {
     return (
       <div className="App">
         <div className="container my-12 mx-auto px-4 md:px-12">
-          <h1 className="text-6xl	text-black font-display py-2">Flickr Phohto Stream</h1>
+          <h1 className="text-4xl md:text-6xl text-black font-display py-2">Flickr Phohto Stream</h1>
           <ToolBar
             safeSearch={this.state.safeSearch}
             onChange={this.handleChange}
@@ -129,52 +129,52 @@ class App extends React.Component {
 
 const ToolBar =(props) => {
   return (
-    <div className="flex flex-wrap py-3">
-      <SafeSearch safeSearch={props.safeSearch} onChange={props.onChange}/>
-      <div className="w-fill md:w-2/6 lg:w-3/6"></div>
-      <SearchBox text={props.text} onChange={props.onChange} onKeyPress={props.onKeyPress} />
+    <div className="flex py-3">
+      <div className="w-1/12 md:w-2/6 lg:w-1/6 mb-1 md:mb-0">
+        <SafeSearch safeSearch={props.safeSearch} onChange={props.onChange}/>
+      </div>
+      <div className="w-2 md:w-2/6 lg:w-3/6"></div>
+      <div className="w-11/12 md:w-2/6">
+        <SearchBox text={props.text} onChange={props.onChange} onKeyPress={props.onKeyPress} />
+      </div>
     </div>
   )
 }
 const SafeSearch = (props) => {
-  return (
-    <div className="w-full md:w-2/6 lg:w-1/6 mb-1 md:mb-0">
-      <div className="relative">
-        <select
-          className="block appearance-none w-full bg-white border border-gray-200 text-gray-700 text-sm py-3 px-4 pr-8 rounded leading-tight focus:outline-none focus:bg-white focus:border-gray-500"
-          id="safesearch"
-          role="list"
-          value={props.safeSearch}
-          onChange={props.onChange}
-        >
-          <option value="1">SafeSearch on</option>
-          <option value="2">SafeSearch moderate</option>
-          <option value="3">SafeSearch off</option>
-        </select>
-        <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-gray-700">
-          <svg className="fill-current h-4 w-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20">
-            <path d="M9.293 12.95l.707.707L15.657 8l-1.414-1.414L10 10.828 5.757 6.586 4.343 8z"/>
-          </svg>
-        </div>
+  return (    
+    <div className="relative">
+      <select
+        className="block appearance-none w-1 md:w-full bg-white border border-gray-200 text-gray-700 text-sm py-3 px-4 md:pr-8 rounded leading-tight focus:outline-none focus:bg-white focus:border-gray-500"
+        id="safesearch"
+        role="list"
+        value={props.safeSearch}
+        onChange={props.onChange}
+      >
+        <option value="1">SafeSearch on</option>
+        <option value="2">SafeSearch moderate</option>
+        <option value="3">SafeSearch off</option>
+      </select>
+      <div className="pointer-events-none absolute inset-y-0 md:right-0 flex items-center px-2 text-gray-700">
+        <svg className="fill-current h-4 w-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20">
+          <path d="M9.293 12.95l.707.707L15.657 8l-1.414-1.414L10 10.828 5.757 6.586 4.343 8z"/>
+        </svg>
       </div>
-    </div>    
+    </div>
   );
 }
 
 const SearchBox = (props) => {
-  return (
-    <div className="w-full md:w-2/6">
-      <input
-        className="appearance-none block w-full bg-white border border-gray-200 text-gray-700 text-sm rounded py-3 px-4 leading-tight focus:outline-none focus:bg-white focus:border-gray-500"
-        id="text"
-        type="text"
-        role="search"
-        placeholder="tags, title and / or description"
-        value={props.text}
-        onChange={props.onChange}
-        onKeyPress={props.onKeyPress}
-      />
-    </div>
+  return (  
+    <input
+      className="appearance-none block w-full bg-white border border-gray-200 text-gray-700 text-sm rounded py-3 px-4 leading-tight focus:outline-none focus:bg-white focus:border-gray-500"
+      id="text"
+      type="text"
+      role="search"
+      placeholder="tags, title and / or description"
+      value={props.text}
+      onChange={props.onChange}
+      onKeyPress={props.onKeyPress}
+    />
   );
 }
 
@@ -291,7 +291,7 @@ const Content = (props) => {
   if (props.content.trim() === "") return "";
   return (
     <div className="pb-0 md:pb-0 p-2 md:p-4">
-      <p className="text-gray-500 text-sm overflow-y-scroll max-h-20">
+      <p className="text-gray-500 text-sm overflow-y-scroll max-h-full md:max-h-20">
         {props.content}
       </p>
     </div>  
@@ -303,7 +303,7 @@ const TagFooter = (props) => {
   if (tags.length <= 1) return "";
   return (
     <div className="pb-0 md:pb-0 p-2 md:p-4">
-      <div className="overflow-x-scroll max-h-24" >
+      <div className="overflow-x-scroll max-h-full md:max-h-24" >
       {tags.map((tag, index) => <TagButton tag={tag} key={index} onClick={props.onClick} />)}
       </div>
     </div>
